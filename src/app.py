@@ -13,7 +13,6 @@ def create_app():
 
     init_db(app)
 
-    # --- REGISTRO DE TODOS LOS BLUEPRINTS (MÓDULOS JIRA) ---
     app.register_blueprint(auth_bp)         # Seguridad (MM)
     app.register_blueprint(inventario_bp)   # Inventario (DJ)
     app.register_blueprint(mantenimiento_bp) # Mantenimiento (A)
