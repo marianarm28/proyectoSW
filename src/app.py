@@ -9,7 +9,6 @@ from .mantenimiento import mantenimiento_bp
 def create_app():
     app = Flask(__name__)
     
-    # Llave secreta para manejo de sesiones seguras en las cookies del navegador
     app.config['SECRET_KEY'] = 'clave_secreta_scrum_sprint1_2026'
 
     init_db(app)
