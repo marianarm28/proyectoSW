@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SGI - Control de Inventario</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            font-size: 24px;
+        }
+        .btn-logout {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        .card {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            height: fit-content;
+        }
+        .card h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 8px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 10px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-submit:hover {
+            background-color: #219653;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+        .badge-disponible { background-color: #27ae60; }
+        .badge-mantenimiento { background-color: #f39c12; }
+        .badge-servicio { background-color: #e74c3c; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Módulo de Inventario</h1>
+            <p>Sprint 1 - Control y Clasificación de Activos</p>
+        </div>
+        <button class="btn-logout" id="btnLogout">Cerrar Sesión</button>
+    </header>
+
+    <div class="grid">
+        <div class="card">
+            <h3>Registrar Nuevo Activo</h3>
+            <form id="activoForm">
+                <div class="form-group">
+                    <label for="nombre">Nombre del Activo</label>
+                    <input type="text" id="nombre" required placeholder="Ej: Torno Industrial CNC">
+                </div>
+                <div class="form-group">
+                    <label for="categoria">Categoría</label>
+                    <select id="categoria" required>
+                        <option value="">Seleccione una...</option>
+                        <option value="Maquinaria">Maquinaria Pesada</option>
+                        <option value="Computo">Equipos de Cómputo</option>
+                        <option value="Herramientas">Herramientas Manuales</option>
+                        <option value="Infraestructura">Infraestructura</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="estado">Estado Inicial</label>
+                    <select id="estado">
+                        <option value="Disponible">Disponible</option>
+                        <option value="En Mantenimiento">En Mantenimiento</option>
+                        <option value="Fuera de Servicio">Fuera de Servicio</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Guardar Activo</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h3>Listado General de Activos</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Estado</th>
+                        <th>Acciones</th> 
+                    </tr>
+                </thead>
+                <tbody id="tablaActivos">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para consultar los activos cargados en MySQL y pintarlos en la tabla
+    async function cargarInventario() {
+        try {
+            const response = await fetch('/api/activos');
+            const data = await response.json();
+            
+            if (response.ok) {
+                const tbody = document.getElementById('tablaActivos');
+                tbody.innerHTML = ''; // Limpiamos la tabla
+                
+                data.activos.forEach(activo => {
+                    let badgeClass = 'badge-disponible';
+                    if (activo.estado === 'En Mantenimiento') badgeClass = 'badge-mantenimiento';
+                    if (activo.estado === 'Fuera de Servicio') badgeClass = 'badge-servicio';
+
+                    tbody.innerHTML += `
+                     <tr>
+                         <td>${activo.id}</td>
+                         <td><strong>${activo.nombre}</strong></td>
+                         <td>${activo.categoria}</td>
+                         <td><span class="badge ${badgeClass}">${activo.estado}</span></td>
+                         <td>
+                             <button onclick="eliminarActivo(${activo.id})" style="background-color: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">Eliminar</button>
+                         </td>
+                     </tr>
+                 `;
+                });
+            } else {
+                alert("Error al cargar inventario: " + data.message);
+            }
+        } catch (error) {
+            console.error("Error de comunicación:", error);
+        }
+    }
+
+    async function eliminarActivo(id) {
+     if (confirm("¿Está seguro de eliminar este activo? Esta acción no se puede deshacer.")) {
+         try {
+             const response = await fetch(/api/activos/${id}, { method: 'DELETE' });
+             const data = await response.json();
+             alert(data.message);
+             if (response.ok) {
+                 cargarInventario(); // Recarga la tabla de inmediato
+             }
+        } catch (error) {
+             alert("Error al intentar eliminar el activo.");
+        }
+    }
+}
+
+    // Evento para guardar un activo mediante AJAX JSON (SCRUM-1)
+    document.getElementById('activoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nombre = document.getElementById('nombre').value;
+        const categoria = document.getElementById('categoria').value;
+        const estado = document.getElementById('estado').value;
+
+        try {
+            const response = await fetch('/api/activos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, categoria, estado })
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                alert(data.message);
+                document.getElementById('activoForm').reset();
+                cargarInventario(); // Recargamos la tabla automáticamente
+            } else {
+                alert("Error: " + data.message);
+            }
+        } catch (error) {
+            alert("Error de comunicación con el servidor.");
+        }
+    });
+
+    // Botón para cerrar sesión limpiamente
+    document.getElementById('btnLogout').addEventListener('click', async () => {
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/';
+    });
+
+    // Ejecutar la carga de la tabla automáticamente al entrar a la pantalla
+    cargarInventario();
+</script>
+
+</body>
+</html>
