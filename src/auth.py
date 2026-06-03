@@ -1,5 +1,6 @@
 # src/auth.py
 from flask import Blueprint, request, jsonify, session, current_app
+from werkzeug.security import check_password_hash
 from .models import Usuario
 from .database import db
 
@@ -10,10 +11,13 @@ def login():
     """
     Mapea la historia: SCRUM-18 (Autenticación Segura)
     """
-    # Forzamos que la consulta se ejecute de forma segura dentro del contexto de la app
     with current_app.app_context():
         try:
-            data = request.get_json()
+            if request.is_json:
+                data = request.get_json()
+            else:
+                data = request.form
+
             if not data or 'username' not in data or 'password' not in data:
                 return jsonify({
                     "status": "error", 
@@ -26,11 +30,14 @@ def login():
             # Buscamos el usuario en MySQL
             usuario = Usuario.query.filter_by(username=username_input).first()
 
-            if usuario and usuario.password_hash == password_input:
+            # --- VALIDACIÓN CRUCIAL ---
+            if usuario and check_password_hash(usuario.password_hash, password_input):
+                # Si entra aquí, guardamos los datos en la sesión
                 session['usuario_id'] = usuario.id
                 session['username'] = usuario.username
                 session['rol'] = usuario.rol
 
+                # RETORNAMOS ÉXITO DE INMEDIATO Y DETENEMOS LA FUNCIÓN (Evita seguir derecho)
                 return jsonify({
                     "status": "success",
                     "message": f"Autenticación exitosa. Bienvenido {usuario.username}.",
@@ -40,17 +47,18 @@ def login():
                     }
                 }), 200
             
+            # Si no entra al IF de arriba, significa que sí son inválidas
             return jsonify({
                 "status": "error",
                 "message": "Credenciales inválidas. Intente nuevamente."
             }), 401
 
         except Exception as e:
-            # Si ocurre algún error con la base de datos, lo capturamos aquí para que no rompa el JS
             return jsonify({
                 "status": "error",
                 "message": f"Error de base de datos: {str(e)}"
             }), 500
+
 
 
 @auth_bp.route('/api/logout', methods=['POST'])
