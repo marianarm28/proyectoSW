@@ -39,37 +39,37 @@ Sigue estos pasos exactos para desplegar el entorno de desarrollo en tu máquina
 Abre tu terminal en VS Code y ejecuta:
 ``bash
 # Clonar el proyecto
-git clone https://github.com/marianarm28/proyectoSW.git
-cd proyectoSW
+* git clone https://github.com/marianarm28/proyectoSW.git
+* cd proyectoSW
 
 # Instalar las librerías necesarias
 pip install flask flask-sqlalchemy pymysql cryptography werkzeug
 ---
 ### 4. Ejecución del Servidor
-Para levantar el servidor de desarrollo en la dirección local http://127.0.0.1:5000, ejecuta el comando modular:
-python -m src.app
+* Para levantar el servidor de desarrollo en la dirección local http://127.0.0.1:5000, ejecuta el comando modular:
+* python -m src.app
 
 ## 🔐 Credenciales de Prueba
 
-admin_mm
-admin123
+* admin_mm
+* admin123
 
 ## 📌 Arquitectura del Proyecto (Patrón de Diseño)
 El proyecto implementa un patrón de diseño Fábrica de Aplicaciones (Application Factory) combinado con Blueprints, permitiendo la escalabilidad modular requerida en metodologías ágiles:
 
 
-proyectoSW/
-│
-├── src/
-│  
-│   ├── app.py               # Punto de entrada, inicialización e inyección de datos de prueba
-│   ├── database.py          # Configuración del pool de conexiones a MySQL (SQLAlchemy)
-│   ├── models.py            # Modelos del sistema (Tablas de base de datos relacional)
-│   ├── auth.py              # Controlador API y Vistas de Seguridad (Mariana)
-│   ├── inventario.py        # Controlador API y Vistas de Inventario (David)
-│   └── mantenimiento.py     # Controlador API y Vistas de Mantenimiento (Andrea)
-│
-└── templates/               # Capa de presentación (Frontend)
-    ├── login.html           # Interfaz de acceso
-    ├── inventario.html      # Panel de administración de activos médicos
-    └── mantenimiento.html   # Monitor de alertas e informes técnicos
+* proyectoSW/
+* │
+* ├── src/
+* │  
+* │   ├── app.py               # Punto de entrada, inicialización e inyección de datos de prueba
+* │   ├── database.py          # Configuración del pool de conexiones a MySQL (SQLAlchemy)
+* │   ├── models.py            # Modelos del sistema (Tablas de base de datos relacional)
+* │   ├── auth.py              # Controlador API y Vistas de Seguridad (Mariana)
+* │   ├── inventario.py        # Controlador API y Vistas de Inventario (David)
+* │   └── mantenimiento.py     # Controlador API y Vistas de Mantenimiento (Andrea)
+* │
+* └── templates/               # Capa de presentación (Frontend)
+*     ├── login.html           # Interfaz de acceso
+*     ├── inventario.html      # Panel de administración de activos médicos
+*     └── mantenimiento.html   # Monitor de alertas e informes técnicos
